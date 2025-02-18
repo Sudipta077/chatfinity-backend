@@ -51,20 +51,19 @@ export const login = async (req, res) => {
         }
 
         const user = await User.findOne({ email });
-        // console.log();
         if (!user) {
             res.status(400);
             throw new Error("User doesn't exist.");
         }
-
+        
         const decrpyt = await bcrypt.compare(password, user.password);
+    
         if (decrpyt === false) {
             res.status(400);
             throw new Error("Wrong credential provided.");
         }
         const userId = user._id;
-        const token = jwt.sign({ email,userId }, process.env.JWT_SECRET);
-
+        const token = jwt.sign({ userId }, process.env.JWT_SECRET);
         res.status(200).json(token);
 
 
