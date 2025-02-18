@@ -4,10 +4,10 @@ import chats from './data/data.js';
 import db from './db/config.js';
 import userRoute from './routes/userRoute.js'
 import chatRoute from './routes/chatRoute.js'
-
+import cors from 'cors';
 dotenv.config(); 
-
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.use('/user',userRoute);
