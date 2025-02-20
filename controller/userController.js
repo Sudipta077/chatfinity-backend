@@ -7,15 +7,13 @@ export const signup = async (req, res) => {
     const { name, email, password, pic } = req.body
     try {
         if (!name || !email || !password) {
-            res.status(400);
-            throw new Error("Incomplete credential field.");
+            return res.status(400).json({ message: "Incomplete credential field." });
+
         }
 
         const userExist = await User.findOne({ email });
-        console.log("---------->", userExist);
         if (userExist) {
-            res.status(400);
-            throw new Error("User Already exists");
+            return res.status(400).json({ message: "User Already exists" });
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -25,18 +23,18 @@ export const signup = async (req, res) => {
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                message: "Signed up"
             })
         }
         else {
-            res.status(400);
-            throw new Error("Failed to creaet user.");
+            return res.status(400).json({ message: 'Failed to creaet user.' });
         }
 
     }
     catch (err) {
         console.log(err);
-        res.status(500).json({ message: err});
+        res.status(500).json({ message: err });
 
     }
 }
@@ -52,25 +50,36 @@ export const login = async (req, res) => {
 
         const user = await User.findOne({ email });
         if (!user) {
-            res.status(400);
-            throw new Error("User doesn't exist.");
+            return res.status(404).json({ message: "User doesn't exist." });
+
         }
-        
+
         const decrpyt = await bcrypt.compare(password, user.password);
-    
+
         if (decrpyt === false) {
-            res.status(400);
-            throw new Error("Wrong credential provided.");
+            return res.status(401).json({ message: "Wrong credential provided." });
+
         }
         const userId = user._id;
         const token = jwt.sign({ userId }, process.env.JWT_SECRET);
-        res.status(200).json(token);
+
+        
+
+        res.status(200).json({
+            message: "Logged in", 
+            token: token,
+            userId: userId,
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            pic: user.pic,
+        });
 
 
     }
     catch (err) {
         console.log(err);
-        return res.json({message:err});
+        return res.status(500).json({ message: err });
     }
 }
 
@@ -86,15 +95,65 @@ export const alluser = async (req, res) => {
 
         const user = req.user;
 
-        const users = await User.find(keyword).find({email: { $ne:user.email}});
+        const users = await User.find(keyword).find({ email: { $ne: user.email } });
         res.json(users);
     }
     catch (err) {
         console.error(err);
-        return res.json({message:err});
+        return res.json({ message: err });
     }
 };
 
+
+export const googleLogin = async (req, res) => {
+    const { name, email, picture, password } = req.body;
+    try {
+
+        const user = await User.findOne({ email: email });
+        if (!user) {
+            console.log("User doen't exist");
+            const createUser = await User.create({ name, email, picture, password });
+            if (createUser) {
+                const userId = createUser._id;
+                const token = jwt.sign({ userId }, process.env.JWT_SECRET);
+                return res.status(200).json({
+                    message: "Logged in", 
+                    token: token,
+                    userId: userId,
+                    name: user.name,
+                    email: user.email,
+                    isAdmin: user.isAdmin,
+                    pic: user.pic,
+                });
+            }
+            else {
+
+                return res.status(500).json({ message: "Failed to log in" });
+            }
+        }
+        else {
+            console.log("User exists");
+
+            const userId = user._id;
+            const token = jwt.sign({ userId }, process.env.JWT_SECRET);
+            res.status(200).json({
+                message: "Logged in", 
+                token: token,
+                userId: userId,
+                name: user.name,
+                email: user.email,
+                isAdmin: user.isAdmin,
+                pic: user.pic,
+            });
+
+        }
+
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(400).json({ message: err });
+    }
+}
 
 
 
