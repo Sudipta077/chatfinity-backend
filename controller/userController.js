@@ -71,8 +71,7 @@ export const login = async (req, res) => {
             userId: userId,
             name: user.name,
             email: user.email,
-            isAdmin: user.isAdmin,
-            pic: user.pic,
+            pic: user.picture,
         });
 
 
@@ -120,10 +119,9 @@ export const googleLogin = async (req, res) => {
                     message: "Logged in", 
                     token: token,
                     userId: userId,
-                    name: user.name,
-                    email: user.email,
-                    isAdmin: user.isAdmin,
-                    pic: user.pic,
+                    name: createUser.name,
+                    email: createUser.email,
+                    pic: createUser.picture,
                 });
             }
             else {
@@ -133,7 +131,7 @@ export const googleLogin = async (req, res) => {
         }
         else {
             console.log("User exists");
-
+            console.log(user);
             const userId = user._id;
             const token = jwt.sign({ userId }, process.env.JWT_SECRET);
             res.status(200).json({
@@ -142,8 +140,7 @@ export const googleLogin = async (req, res) => {
                 userId: userId,
                 name: user.name,
                 email: user.email,
-                isAdmin: user.isAdmin,
-                pic: user.pic,
+                pic: user.picture,
             });
 
         }
