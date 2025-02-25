@@ -94,7 +94,10 @@ export const alluser = async (req, res) => {
 
         const user = req.user;
 
-        const users = await User.find(keyword).find({ email: { $ne: user.email } });
+        const users = await User.find({
+            ...keyword,
+            _id: { $ne: user.userId }  // Exclude the current user
+        });
         res.json(users);
     }
     catch (err) {
