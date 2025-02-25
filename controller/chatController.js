@@ -36,11 +36,16 @@ export const createChat = async (req, res) => {
             res.send(isChat[0]);
         }
         else {
+
+            const user2 = await User.findById(userId);
+
             const chatData = {
-                chatName: "sender",
+                chatName: user2.name,
                 isGroupChat: false,
                 users: [userId, user._id]
             }
+
+            console.log("isChat===>",user2.name);
 
             const createdChat = await Chat.create(chatData);
             const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
@@ -72,7 +77,7 @@ export const fetchChat = async (req, res) => {
         });
 
         res.status(200).json(results);
-        console.log(results);
+        // console.log(results);
     }
     catch (err) {
         console.log(err);
@@ -89,7 +94,7 @@ export const groupCreate = async (req, res) => {
         return res.status(400).json({ message: "Incomplete group details" });
     }
 
-    let users = JSON.parse(req.body.users);
+    let users = req.body.users;
 
     if (users.length < 2) {
         return res.status(400).json({ message: "You need to add more than 2 people." })
