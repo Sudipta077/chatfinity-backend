@@ -45,7 +45,7 @@ export const createChat = async (req, res) => {
                 users: [userId, user._id]
             }
 
-            console.log("isChat===>",user2.name);
+            // console.log("isChat===>",user2.name);
 
             const createdChat = await Chat.create(chatData);
             const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
@@ -131,15 +131,18 @@ export const groupCreate = async (req, res) => {
 
 export const renameGroup = async (req, res) => {
     const { chatId, chatName } = req.body;
+    console.log(chatId);
+    
     try {
         const upDatedChat = await Chat.findByIdAndUpdate(chatId, {
             chatName
         }, {
             new: true
         })
-            .populate("users", "-password")
-            .populate("groupAdmin", "-password")
-
+        .populate("users", "-password")
+        .populate("groupAdmin", "-password")
+        
+        // console.log(upDatedChat);
         if (!upDatedChat) {
             return res.status(400).json({ message: "Chat not found." });
         }
@@ -149,7 +152,7 @@ export const renameGroup = async (req, res) => {
     }
     catch (err) {
         console.log(err);
-        return res.status(400).json({ message: err });
+        return res.status(402).json({ message: err });
     }
 }
 
@@ -157,6 +160,7 @@ export const renameGroup = async (req, res) => {
 
 export const groupAdd = async (req, res) => {
     const { chatId, userId } = req.body;
+    
     try {
         const added = await Chat.findByIdAndUpdate(chatId,
             {
@@ -178,7 +182,6 @@ export const groupAdd = async (req, res) => {
             res.status(200).json(added)
         }
 
-
     }
     catch (err) {
         console.log(err);
@@ -188,6 +191,7 @@ export const groupAdd = async (req, res) => {
 
 export const removeFromGroup = async (req, res) => {
     const { chatId, userId } = req.body;
+    console.log("removed-->",chatId);
     try {
         const removed =await Chat.findByIdAndUpdate(chatId, {
             $pull: {
