@@ -38,7 +38,7 @@ export const sendMessage=async(req,res)=>{
         await Chat.findByIdAndUpdate(chatId,{
             latestMessage:message   
         })
-        console.log("message ---->",message);
+        // console.log("message ---->",message);
         res.status(200).json(message);
 
     }
@@ -51,6 +51,7 @@ export const sendMessage=async(req,res)=>{
 
 export const fetchMessage=async(req,res)=>{
     try{
+        // console.log(req.params.chatId);
         const messages = await Message.find({chat:req.params.chatId}).populate('sender','name email picture').populate('chat');
         res.status(200).json(messages);
     }

@@ -10,6 +10,10 @@ const chatSchema = mongoose.Schema(
             type: Boolean,
             default: false
         },
+        picture:{
+            type:String,
+            default:`https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHtnBXLs-B1eevwz417dEJvTnMiOjr2xHvZQ&s`
+        },
         users: [
             {
                 type: mongoose.Schema.Types.ObjectId,

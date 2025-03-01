@@ -8,7 +8,7 @@ import messageRoute from './routes/messageRoute.js'
 import { createServer } from 'node:http';
 import SocketService from './services/index.js';
 import cors from 'cors';
-dotenv.config(); 
+dotenv.config();
 const app = express();
 const server = createServer(app);
 const socketService = new SocketService();
@@ -18,16 +18,25 @@ app.use(express.json());
 
 
 
-app.use('/user',userRoute);
-app.use('/chat',chatRoute);
-app.use('/message',messageRoute);
+app.use('/user', userRoute);
+app.use('/chat', chatRoute);
+app.use('/message', messageRoute);
 
 
-socketService.io.attach(server);
+socketService.io.attach(server,
+  {
+    pingTimout: 60000,
+    cors:{
+        origin:"http://localhost:3000"
+    }
+  }
+);
+
+
 socketService.initListener();
 
 const port = process.env.PORT || 8000
 
 server.listen(port, () => {
-    console.log(`server running at port ${port}`);
-  });
+  console.log(`server running at port ${port}`);
+});
