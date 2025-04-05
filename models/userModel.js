@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema(
         },
         picture:{
             type:String,
-            default:'https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png'
+            default:'https://cdn-icons-png.freepik.com/512/8742/8742495.png'
         }
     },
     {

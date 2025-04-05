@@ -18,7 +18,7 @@ class SocketService {
 
 
             socket.on('setup', (userData) => {
-                console.log("connected user data--->", userData.name);
+                console.log("connected user data--->", userData.email);
                 socket.join(userData?.id);
                 socket.emit('connected');
             })
@@ -34,7 +34,13 @@ class SocketService {
                 console.log(`New message received`, chat);
                 socket.broadcast.to(chat._id).emit("message received", message);
             })
+
+            socket.on('typing', (room) => socket.in(room).emit('typing'));
+            socket.on('stop typing', (room) => socket.in(room).emit('stop typing'));
+
         })
+
+      
     }
 
 
