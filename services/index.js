@@ -35,7 +35,10 @@ class SocketService {
                 socket.broadcast.to(chat._id).emit("message received", message);
             })
 
-            socket.on('typing', (room) => socket.in(room).emit('typing'));
+            socket.on('typing', (room) => {
+                socket.to(room).emit('typing')
+                console.log("typppppepepep",room);
+            });
             socket.on('stop typing', (room) => socket.in(room).emit('stop typing'));
 
         })
