@@ -1,4 +1,20 @@
 import { Server } from "socket.io";
+import Redis from 'ioredis';
+import dotenv from 'dotenv';
+dotenv.config();
+
+
+const pub = new Redis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+});
+
+const sub = new Redis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+});
+
+sub.subscribe("new-messages");
+
+
 class SocketService {
     #io
     constructor(server) {
@@ -31,8 +47,17 @@ class SocketService {
 
             socket.on('new message', async (message) => {
                 const chat = message?.chat;
-                // console.log(`New message received`, chat);
-                socket.broadcast.to(chat._id).emit("message received", message);
+                console.log(`New message received`, message);
+
+                await pub.publish("new-messages", JSON.stringify(message));
+
+                sub.on("message", (channel, message) => {
+                    if (channel === "new-messages") {
+                        const data = JSON.parse(message);
+                        socket.broadcast.to(chat._id).emit("message received", data);
+                        console.log(`subscriber rcvd------>`, message);
+                    }
+                })
             })
 
             socket.on('typing', (room) => {
@@ -43,7 +68,7 @@ class SocketService {
 
         })
 
-      
+
     }
 
 
