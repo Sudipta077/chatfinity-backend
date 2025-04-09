@@ -38,7 +38,7 @@ export const createChat = async (req, res) => {
         else {
 
             const user2 = await User.findById(userId);
-
+            console.log("user2-------->",user2);
             const chatData = {
                 chatName: user2.name,
                 isGroupChat: false,

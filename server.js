@@ -35,7 +35,7 @@ socketService.io.attach(server,
 
 socketService.initListener();
 
-const port = process.env.PORT || 8000
+const port = process.argv[2] || process.env.PORT || 8000;
 
 server.listen(port, () => {
   console.log(`server running at port ${port}`);

@@ -20,10 +20,29 @@ class SocketService {
     constructor(server) {
         // console.log("Socket instance initialized.")
         this.#io = new Server(server);
+        this.setupRedisSubscriber();
     }
 
     get io() {
         return this.#io;
+    }
+
+    setupRedisSubscriber() {
+        sub.on("message", (channel, message) => {
+            if (channel === "new-messages") {
+                const data = JSON.parse(message);
+                const chat = data.chat;
+
+                // Emit to all sockets in that chat room
+                this.io.to(chat._id).emit("message received", data);
+                console.log(`Redis Pub/Sub delivered message to room ${chat._id}`);
+            }
+        });
+
+        sub.subscribe("new-messages", (err) => {
+            if (err) console.error("Redis subscribe error:", err);
+            else console.log("Redis subscribed to new-messages");
+        });
     }
 
     initListener() {
@@ -51,13 +70,7 @@ class SocketService {
 
                 await pub.publish("new-messages", JSON.stringify(message));
 
-                sub.on("message", (channel, message) => {
-                    if (channel === "new-messages") {
-                        const data = JSON.parse(message);
-                        socket.broadcast.to(chat._id).emit("message received", data);
-                        console.log(`subscriber rcvd------>`, message);
-                    }
-                })
+
             })
 
             socket.on('typing', (room) => {
