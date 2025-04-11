@@ -1,53 +1,47 @@
 import Message from '../models/messageModel.js'
 import User from '../models/userModel.js'
 import Chat from '../models/chatModel.js'
-export const sendMessage=async(req,res)=>{
-    const {content,chatId} = req.body;
-    if(!content || !chatId){
-        return res.status(400).json({message:"Incomplete details"});
+export const sendMessage = async ({ message, user }) => {
+    const { content, chatId } = message;
+
+    if (!content || !chatId) {
+        return { error: "Incomplete details" };
     }
 
     let newMessage = {
-        sender:req.user.userId,
-        content:content,
-        chat:chatId
-    }   
+        sender: user.userId,
+        content,
+        chat: chatId
+    };
 
-    try{
+    try {
+        const isUserInChat = await Chat.exists({ _id: chatId, users: user.userId });
 
-        // const targetChat = await Chat.findById(chatId);
+        if (!isUserInChat) {
+            return { error: "You are not part of this chat." };
+        }
 
-        // console.log("req.user.userId->",req.user);
+        let createdMessage = await Message.create(newMessage);
+        createdMessage = await createdMessage.populate("sender", "-password");
+        createdMessage = await createdMessage.populate("chat");
+        createdMessage = await User.populate(createdMessage, {
+            path: "chat.users",
+            select: "name picture email"
+        });
 
-        const isUserInChat = await Chat.exists({ _id: chatId , users: req.user.userId });
-        
+        await Chat.findByIdAndUpdate(chatId, {
+            latestMessage: createdMessage
+        });
 
-        // console.log("target chat---->",isUserInChat);
+        // console.log("message created--->",createdMessage);
 
-        if(!isUserInChat)
-            return res.status(401).json({message:"You are not a chat."});
-
-        let message =  await Message.create(newMessage);
-        message = await message.populate("sender","-password");
-        message = await message.populate("chat");
-        message = await User.populate(message,{
-            path:'chat.users',
-            select:"name picture email"
-        })
-
-        await Chat.findByIdAndUpdate(chatId,{
-            latestMessage:message   
-        })
-        // console.log("message ---->",message);
-        res.status(200).json(message);
-
+        return { result: createdMessage };
+    } catch (err) {
+        console.error("Error in sendMessage:", err);
+        return { error: "Internal server error" };
     }
-    catch(err){
-        console.log(err);
-        return res.status(500).json({message:err});
-    }
+};
 
-}
 
 export const fetchMessage=async(req,res)=>{
     try{
