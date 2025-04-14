@@ -1,6 +1,6 @@
 import Chat from '../models/chatModel.js';
 import User from '../models/userModel.js'
-
+import crypto from 'crypto';
 
 // creates chat if there is no chat between me and another user , if exists then that chat is returned with all details
 
@@ -33,21 +33,25 @@ export const createChat = async (req, res) => {
             select: "name picture email"
         })
         if (isChat.length > 0) {
+            // console.log("created chat--------->",isChat[0]);
             res.send(isChat[0]);
         }
         else {
 
             const user2 = await User.findById(userId);
-            console.log("user2-------->",user2);
+            // console.log("user2-------->",user2);
+            const salt = crypto.randomBytes(16).toString("hex");
             const chatData = {
                 chatName: user2.name,
                 isGroupChat: false,
-                users: [userId, user._id]
+                users: [userId, user._id],
+                salt:salt
             }
 
             // console.log("isChat===>",user2.name);
 
             const createdChat = await Chat.create(chatData);
+            // console.log("Created chat")
             const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
                 "users", "-password"
             )
@@ -76,8 +80,8 @@ export const fetchChat = async (req, res) => {
             select: "name picture email"
         });
 
+        // console.log("results to fetch---->",results);
         res.status(200).json(results);
-        // console.log(results);
     }
     catch (err) {
         console.log(err);
@@ -105,11 +109,15 @@ export const groupCreate = async (req, res) => {
 
     try {
 
+        const salt = crypto.randomBytes(16).toString("hex");
+        
+
         const groupChat = await Chat.create({
             chatName: req.body.name,
             users: users,
             isGroupChat: true,
-            groupAdmin: currentUser._id
+            groupAdmin: currentUser._id,
+            salt:salt
         })
 
         const fullGroupChat = await Chat.findOne({ _id: groupChat._id })

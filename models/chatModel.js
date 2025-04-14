@@ -27,11 +27,16 @@ const chatSchema = mongoose.Schema(
         groupAdmin:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'User'
+        },
+        salt: {
+            type: String,
+            required: true  // Always generate when chat is created
         }
     },
     {
         timetamps:true
-    }
+    },
+    
 );
 
 const chatModel = mongoose.model("Chat",chatSchema);

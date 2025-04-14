@@ -34,10 +34,10 @@ class SocketService {
             if (channel === "new-messages") {
                 const data = JSON.parse(message);
                 // const chat = data.chat;
-                console.log("new ms g-->",data);
+                // console.log("new ms g-->",data);
                 // // Emit to all sockets in that chat room
                 this.io.to(data.message.chatId).emit("message received", data);
-                console.log(`Redis Pub/Sub delivered message to room ${data.message.chatId}`);
+                // console.log(`Redis Pub/Sub delivered message to room ${data.message.chatId}`);
             }
         });
 
@@ -84,7 +84,7 @@ class SocketService {
 
             socket.on('join chat', (room) => {
                 socket.join(room);
-                console.log('User joined room--->', room)
+                // console.log('User joined room--->', room)
             })
 
 
@@ -92,7 +92,7 @@ class SocketService {
                 const chat = message;
             
                 const user = socket.user;
-                console.log(`New message received`, message);
+                // console.log(`New message received`, message);
 
                 try{
 
