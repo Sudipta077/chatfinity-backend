@@ -1,8 +1,21 @@
 import Message from '../models/messageModel.js'
 import User from '../models/userModel.js'
 import Chat from '../models/chatModel.js'
+import {GetObjectCommand, S3Client,PutObjectCommand} from '@aws-sdk/client-s3'
+import {getSignedUrl} from '@aws-sdk/s3-request-presigner'
+import dotenv from 'dotenv';
+dotenv.config();
+const s3Client = new S3Client({
+    region:'ap-south-1',
+    credentials:{
+        accessKeyId:`${process.env.S3_ACCESS_KEY}`,
+        secretAccessKey:`${process.env.S3_ACCESS_SECRET}`
+    }
+})
+
+
 export const sendMessage = async ({ message, user }) => {
-    const { content, chatId } = message;
+    const { content, chatId,messageType } = message;
 
     if (!content || !chatId) {
         return { error: "Incomplete details" };
@@ -11,8 +24,20 @@ export const sendMessage = async ({ message, user }) => {
     let newMessage = {
         sender: user.userId,
         content,
-        chat: chatId
+        chat: chatId,
+        messageType:messageType || 'text',
+        fileName:message?.fileName ,        // Optional: original file name
+        mimeType: message?.mimeType,        // Optional: for frontend rendering logic
+        fileSize: message?.fileSize,        // Optional: to show size on UI
+      
     };
+    if (messageType !== 'text') {
+        if (message.fileName) newMessage.fileName = message.fileName;
+        if (message.mimeType) newMessage.mimeType = message.mimeType;
+        if (message.fileSize) newMessage.fileSize = message.fileSize;
+        if (message.fileSize) newMessage.fileSize = message.fileSize;
+
+    }
 
     try {
         const isUserInChat = await Chat.exists({ _id: chatId, users: user.userId });
@@ -53,4 +78,39 @@ export const fetchMessage=async(req,res)=>{
         console.log(err);
         return res.status(500).json({message:err});
     }
+}
+
+
+async function getObjectUrl(key) {
+    const command = new GetObjectCommand({
+        Bucket:'chatfinity',
+        Key:key
+    });
+    const url = await getSignedUrl(s3Client,command);
+    return url;
+}
+
+async function putObjectUrl(chatId,fileName,fileType) {
+    const command = new PutObjectCommand({
+        Bucket:'chatfinity',
+        Key:`${chatId}/${fileName}`,
+        ContentType:fileType
+    });
+    const url = await getSignedUrl(s3Client,command);
+    return url;
+}
+
+export const sendFiles=async(req,res)=>{
+    const {fileName,fileSize,fileType} = req.body
+    console.log("hello from postFIle---------->");
+    const url = await putObjectUrl(req.params.chatId,fileName,fileType)
+    console.log("post url---->",url);
+    res.json({url:url});
+}
+
+export const getFiles=async(req,res)=>{
+    console.log("hello from getFIle---------->");
+    const url = await getObjectUrl('background.jpg')
+    console.log("getUrl--------->",url);
+    res.json({url:url});
 }

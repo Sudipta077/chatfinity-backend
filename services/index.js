@@ -61,7 +61,7 @@ class SocketService {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET);
                 socket.user = decoded; // attach user for later use
-                console.log("decoded token");
+                // console.log("decoded token");
 
                 next();
             } catch (err) {
@@ -106,7 +106,7 @@ class SocketService {
                         console.log("Errorrrr->",error);
                     }
                     else{
-                        console.log("Success->",result);
+                        // console.log("Success->",result);
                         
                     }
 
