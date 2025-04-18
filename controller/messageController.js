@@ -104,22 +104,22 @@ export const sendFiles = async (req, res) => {
     const { fileSize, fileType } = req.body;
     const fileName = Date.now();
     try {
-        console.log("hello from postFIle---------->");
+        // console.log("hello from postFIle---------->");
         const url = await putObjectUrl(req.params.chatId, fileName, fileType)
-        console.log("post url---->", url);
+        // console.log("post url---->", url);
         res.json({ url: url,key:`${req.params.chatId}/${fileName}` });
     }
     catch (err) {
-        console.log("Error in sendFiles-->?", err);
+        // console.log("Error in sendFiles-->?", err);
     }
 }
 
 export const getFiles = async (req, res) => {
-    console.log("hello from getFIle---------->");
+    // console.log("hello from getFIle---------->");
     try {
         const key = req.query.key;
         const url = await getObjectUrl(key);
-        console.log("getUrl--------->", key);
+        // console.log("getUrl--------->", key);
         res.json({ url: url });
     }
     catch (err) {
